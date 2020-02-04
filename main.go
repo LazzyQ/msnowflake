@@ -13,6 +13,15 @@ func main() {
 	}
 	runtime.GOMAXPROCS(MyConf.Base.MaxProc)
 
-	log.Info("xx")
+	log.WithFields(log.Fields{
+		"data-center": MyConf.Snowflake.DataCenterId,
+	}).Info("msnowflake 服务启动")
 
+	if err := InitProcess(); err != nil {
+		panic(err)
+	}
+	InitPprof()
+	if err := InitZK(); err != nil {
+		panic(err)
+	}
 }
