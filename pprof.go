@@ -17,9 +17,9 @@ func InitPprof() {
 		go func() {
 			if err := http.ListenAndServe(addr, pprofServeMux); err != nil {
 				log.WithFields(log.Fields{
-					"addr": addr,
+					"addr":  addr,
 					"error": err,
-				}).Error("http.ListenAndServe error");
+				}).Error("http.ListenAndServe error")
 			}
 		}()
 	}

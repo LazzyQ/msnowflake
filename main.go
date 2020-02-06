@@ -7,6 +7,8 @@ import (
 )
 
 func main() {
+
+	log.WithField("maxWorkerId", maxWorkerId).Info("======")
 	flag.Parse()
 	if err := InitConfig(); err != nil {
 		panic(err)
@@ -24,4 +26,19 @@ func main() {
 	if err := InitZK(); err != nil {
 		panic(err)
 	}
+	defer CloseZK()
+
+	if err := SanityCheckPeers(); err != nil {
+		panic(err)
+	}
+
+	workers, err := NewWorkers()
+	if err != nil {
+		panic(err)
+	}
+
+	if err := InitRPC(workers); err != nil {
+		panic(err)
+	}
+
 }

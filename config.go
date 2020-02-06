@@ -14,10 +14,10 @@ var (
 )
 
 type Config struct {
-	Base *Base
+	Base      *Base
 	Snowflake *Snowflake
 	Zookeeper *Zookeeper
-	Twepoch int64
+	Twepoch   int64
 }
 
 type Base struct {
@@ -32,27 +32,24 @@ type Base struct {
 }
 
 type Snowflake struct {
-	DataCenterId int64 `yaml:"data-center"`
-	WorkerId []int64 `yaml:"worker"`
-	Start string `yaml:"start"`
-
+	DataCenterId int64   `yaml:"data-center"`
+	WorkerId     []int64 `yaml:"worker"`
+	Start        string  `yaml:"start"`
 }
 
 type Zookeeper struct {
-	ZKAddr []string `yaml:"addr"`
+	ZKAddr    []string      `yaml:"addr"`
 	ZKTimeout time.Duration `yaml:"timeout"`
-	ZKPath string `yaml:"path"`
+	ZKPath    string        `yaml:"path"`
 }
 
 func InitConfig() (err error) {
 
 	var (
-		file *os.File
-		blob []byte
+		file    *os.File
+		blob    []byte
 		twepoch time.Time
 	)
-	c = new(Config)
-
 	if file, err = os.Open(confPath); err != nil {
 		return
 	}
@@ -62,22 +59,22 @@ func InitConfig() (err error) {
 
 	MyConf = &Config{
 		Base: &Base{
-			PidFile: "/tmp/gosnowflake.pid",
-			Dir: "/dev/null",
-			Log: "./log/xml",
-			MaxProc: runtime.NumCPU(),
-			PRCBind: []string{"localhost:8080"},
+			PidFile:    "/tmp/gosnowflake.pid",
+			Dir:        "/dev/null",
+			Log:        "./log/xml",
+			MaxProc:    runtime.NumCPU(),
+			PRCBind:    []string{"localhost:8080"},
 			ThriftBind: []string{"localhost:8081"},
 		},
 		Snowflake: &Snowflake{
 			DataCenterId: 0,
-			WorkerId: []int64{0},
-			Start: "2020-02-02 13:14:52",
+			WorkerId:     []int64{0},
+			Start:        "2020-02-02 13:14:52",
 		},
 		Zookeeper: &Zookeeper{
-			ZKAddr: []string{"localhost:2181"},
+			ZKAddr:    []string{"localhost:2181"},
 			ZKTimeout: time.Second * 15,
-			ZKPath: "/msnowflake-servers",
+			ZKPath:    "/msnowflake-servers",
 		},
 	}
 
