@@ -25,7 +25,7 @@ type Base struct {
 	Dir        string   `yaml:"dir"`
 	Log        string   `yaml:"log"`
 	MaxProc    int      `yaml:"maxproc"`
-	PRCBind    []string `yaml:"rpc-bind"`
+	RPCBind    []string `yaml:"rpc-bind"`
 	ThriftBind []string `yaml:"thrift-bind"`
 	StatBind   []string `yaml:"stat-bind"`
 	PprofBind  []string `yaml:"pprof-bind"`
@@ -63,7 +63,7 @@ func InitConfig() (err error) {
 			Dir:        "/dev/null",
 			Log:        "./log/xml",
 			MaxProc:    runtime.NumCPU(),
-			PRCBind:    []string{"localhost:8080"},
+			RPCBind:    []string{"localhost:8080"},
 			ThriftBind: []string{"localhost:8081"},
 		},
 		Snowflake: &Snowflake{

@@ -166,3 +166,30 @@ func getPeers() (map[int][]*Peer, error) {
 	}
 	return res, nil
 }
+
+func RegWorkerId(workerId int64) (err error) {
+	workerIdPath := fmt.Sprintf("%s/%d", MyConf.Zookeeper.ZKPath, workerId)
+	if _, err = zkConn.Create(workerIdPath, []byte(""), 0, zk.WorldACL(zk.PermAll)); err != nil {
+		if err == zk.ErrNodeExists {
+			log.WithField("workerIdPath", workerIdPath).Warn("zk创建的节点已经存在")
+		} else {
+			log.WithFields(log.Fields{
+				"workerIdPath": workerIdPath,
+				"err":          err,
+			}).Error("zk创建的节点已经存在失败", workerIdPath, err)
+			return
+		}
+	}
+
+	d, err := json.Marshal(&Peer{RPC: MyConf.Base.RPCBind, Thrift: MyConf.Base.ThriftBind})
+	if err != nil {
+		log.WithField("err", err).Error("节点数据Peer序列化失败")
+		return
+	}
+	workerIdPath += "/"
+	if _, err = zkConn.Create(workerIdPath, d, zk.FlagEphemeral|zk.FlagSequence, zk.WorldACL(zk.PermAll)); err != nil {
+		log.Error("zk.create(\"%s\") error(%v)", workerIdPath, err)
+		return
+	}
+	return
+}
