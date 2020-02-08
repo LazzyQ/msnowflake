@@ -5,6 +5,7 @@ import (
 	"fmt"
 	log "github.com/sirupsen/logrus"
 	"sync"
+	"time"
 )
 
 // id = [timestamp][dataCenterId:5][workerId:5][sequence:12]
@@ -26,7 +27,7 @@ type IdWorker struct {
 	sequence      int64
 	lastTimestamp int64
 	workerId      int64
-	twepoch       int64
+	twepoch       int64 // 起始时间
 	dataCenterId  int64
 	mutex         sync.Mutex
 }
@@ -62,4 +63,37 @@ func NewIdWorker(workerId, dataCenterId int64, twepoch int64) (*IdWorker, error)
 		"workerId":       workerId,
 	}).Debug("worker启动")
 	return idWorker, nil
+}
+
+func (id *IdWorker) NextId() (int64, error) {
+	id.mutex.Lock()
+	defer id.mutex.Unlock()
+	timestamp := timeGen()
+	if timestamp < id.lastTimestamp {
+		log.Error("clock is moving backwards.  Rejecting requests until %d.", id.lastTimestamp)
+		return 0, errors.New(fmt.Sprintf("Clock moved backwards.  Refusing to generate id for %d milliseconds", id.lastTimestamp-timestamp))
+	}
+	if id.lastTimestamp == timestamp {
+		id.sequence = (id.sequence + 1) & sequenceMask
+		if id.sequence == 0 {
+			timestamp = tilNextMillis(id.lastTimestamp)
+		}
+	} else {
+		id.sequence = 0
+	}
+	id.lastTimestamp = timestamp
+	return ((timestamp - id.twepoch) << timestampLeftShift) | (id.dataCenterId << dataCenterIdBits) | (id.workerId << workerIdShift) | id.sequence, nil
+}
+
+// 返回的是当前时间戳，但是是ms
+func timeGen() int64 {
+	return time.Now().UnixNano() / int64(time.Microsecond)
+}
+
+func tilNextMillis(lastTimestamp int64) int64 {
+	timestamp := timeGen()
+	for timestamp <= lastTimestamp {
+		timestamp = timeGen()
+	}
+	return timestamp
 }

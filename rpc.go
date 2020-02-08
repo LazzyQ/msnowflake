@@ -34,3 +34,17 @@ func rpcListen(bind string) {
 	}()
 	rpc.Accept(l)
 }
+
+func (s *SnowflakeRPC) NextId(workerId int64, id *int64) error {
+	worker, err := s.workers.Get(workerId)
+	if err != nil {
+		return err
+	}
+	if tid, err := worker.NextId(); err != nil {
+		log.WithField("error", err).Error("worker.NextId()失败")
+		return err
+	} else {
+		*id = tid
+		return nil
+	}
+}
