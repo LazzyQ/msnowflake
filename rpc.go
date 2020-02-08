@@ -2,6 +2,7 @@ package main
 
 import (
 	log "github.com/sirupsen/logrus"
+	//myrpc "github.com/LazzyQ/msnowflake/rpc"
 	"net"
 	"net/rpc"
 )
@@ -47,4 +48,8 @@ func (s *SnowflakeRPC) NextId(workerId int64, id *int64) error {
 		*id = tid
 		return nil
 	}
+}
+
+func (s *SnowflakeRPC) NextIds() {
+
 }
