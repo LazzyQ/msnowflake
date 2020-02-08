@@ -1,4 +1,4 @@
-module "https://github.com/LazzyQ/msnowflake"
+module github.com/LazzyQ/msnowflake
 
 go 1.12
 

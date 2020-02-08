@@ -1,8 +1,9 @@
 package main
 
 import (
+	"errors"
+	myrpc "github.com/LazzyQ/msnowflake/rpc"
 	log "github.com/sirupsen/logrus"
-	//myrpc "github.com/LazzyQ/msnowflake/rpc"
 	"net"
 	"net/rpc"
 )
@@ -50,6 +51,19 @@ func (s *SnowflakeRPC) NextId(workerId int64, id *int64) error {
 	}
 }
 
-func (s *SnowflakeRPC) NextIds() {
-
+func (s *SnowflakeRPC) NextIds(args *myrpc.NextIdsArgs, ids *[]int64) error {
+	if args == nil {
+		return errors.New("参数不能为空")
+	}
+	worker, err := s.workers.Get(args.WorkerId)
+	if err != nil {
+		return err
+	}
+	if tids, err := worker.NextIds(args.Num); err != nil {
+		log.Error("worker.NextIds(%d) error(%v)", args.Num, err)
+		return err
+	} else {
+		*ids = tids
+		return nil
+	}
 }

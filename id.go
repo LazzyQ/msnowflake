@@ -85,6 +85,35 @@ func (id *IdWorker) NextId() (int64, error) {
 	return ((timestamp - id.twepoch) << timestampLeftShift) | (id.dataCenterId << dataCenterIdBits) | (id.workerId << workerIdShift) | id.sequence, nil
 }
 
+func (id *IdWorker) NextIds(num int) ([]int64, error) {
+	if num > maxNextIdsNum || num < 0 {
+		log.WithFields(log.Fields{
+			"maxIdNum":     maxNextIdsNum,
+			"currentIdNum": num,
+		}).Error("获取id超过NextIds限制的数量或小于0")
+		return nil, errors.New(fmt.Sprintf("NextIds数量参数不对: %d", num))
+	}
+	ids := make([]int64, num)
+	for i := 0; i < num; i++ {
+		timestamp := timeGen()
+		if timestamp < id.lastTimestamp {
+			log.Error("clock is moving backwards.  Rejecting requests until %d.", id.lastTimestamp)
+			return nil, errors.New(fmt.Sprintf("Clock moved backwards.  Refusing to generate id for %d milliseconds", id.lastTimestamp-timestamp))
+		}
+		if id.lastTimestamp == timestamp {
+			id.sequence = (id.sequence + 1) & sequenceMask
+			if id.sequence == 0 {
+				timestamp = tilNextMillis(id.lastTimestamp)
+			}
+		} else {
+			id.sequence = 0
+		}
+		id.lastTimestamp = timestamp
+		ids[i] = ((timestamp - id.twepoch) << timestampLeftShift) | (id.dataCenterId << dataCenterIdShift) | (id.workerId << workerIdShift) | id.sequence
+	}
+	return ids, nil
+}
+
 // 返回的是当前时间戳，但是是ms
 func timeGen() int64 {
 	return time.Now().UnixNano() / int64(time.Microsecond)
