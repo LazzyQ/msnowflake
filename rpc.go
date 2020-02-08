@@ -6,6 +6,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"net"
 	"net/rpc"
+	"time"
 )
 
 type SnowflakeRPC struct {
@@ -66,4 +67,19 @@ func (s *SnowflakeRPC) NextIds(args *myrpc.NextIdsArgs, ids *[]int64) error {
 		*ids = tids
 		return nil
 	}
+}
+
+func (s *SnowflakeRPC) DataCenterId(ignore int, dataCentId *int64) error {
+	*dataCentId = MyConf.Snowflake.DataCenterId
+	return nil
+}
+
+func (s *SnowflakeRPC) Timestamp(ignore int, timestamp *int64) error {
+	*timestamp = time.Now().Unix()
+	return nil
+}
+
+func (s *SnowflakeRPC) Ping(ignore int, status *int) error {
+	*status = 0
+	return nil
 }
