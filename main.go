@@ -41,4 +41,8 @@ func main() {
 		panic(err)
 	}
 
+	sc := InitSignal()
+	HandleSignal(sc)
+	log.Info("gosnowflake服务停止")
+
 }
