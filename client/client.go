@@ -89,7 +89,7 @@ func NewClient(workerId int64) (c *Client) {
 		clients:  nil,
 		leader:   "",
 	}
-	go c.watchWorkerId(workerId, strconv.FormatInt(workerId, 10))
+	go c.watchWorkerId(strconv.FormatInt(workerId, 10))
 	workerIdMap[workerId] = c
 	return
 }
@@ -124,18 +124,21 @@ func (c *Client) Ids(num int) (ids []int64, err error) {
 	return
 }
 
-func (c *Client) watchWorkerId(workerId int64, workerIdStr string) {
+func (c *Client) watchWorkerId(workerIdStr string) {
 	workerIdPath := path.Join(zkPath, workerIdStr)
 	log.Debugf("workerIdPath: %s", workerIdPath)
 	for {
-		rpcs, _, watch, err := zkConn.ChildrenW(workerIdStr)
+		rpcs, _, watch, err := zkConn.ChildrenW(workerIdPath)
 		if err != nil {
-			log.Errorf("zkConn.ChildrenW(%s) error(%v)", workerIdPath, err)
+			log.WithFields(log.Fields{
+				"workerIdPath": workerIdPath,
+				"error": err,
+			}).Error("zkConn.ChildrenW失败")
 			time.Sleep(zkNodeDelaySleep)
 			continue
 		}
 		if len(rpcs) == 0 {
-			log.Errorf("zkConn.ChildrenW(%s) no nodes", workerIdPath)
+			log.WithField("workerIdPath", workerIdPath).Error("zkConn.ChildrenW没有节点")
 			time.Sleep(zkNodeDelaySleep)
 			continue
 		}
@@ -163,7 +166,6 @@ func (c *Client) watchWorkerId(workerId int64, workerIdStr string) {
 			}
 			peer := &Peer{}
 			if err = json.Unmarshal(bs, peer); err != nil {
-
 				log.WithFields(log.Fields{
 					"bytes内容": string(bs),
 					"error": err,

@@ -100,7 +100,7 @@ func SanityCheckPeers() error {
 	// check 10s
 	// calc avg timestamps
 	now := time.Now().Unix()
-	avg := int64(timestamps / peerCount)
+	avg := timestamps / peerCount
 	log.Debug("timestamps: %d, peer: %d, avg: %d, now - avg: %d, maxdelay: %d", timestamps, peerCount, avg, now-avg, timestampMaxDelay)
 	if now-avg > timestampMaxDelay {
 		log.Error("timestamp sanity check failed. Mean timestamp is %d, but mine is %d so I'm more than 10s away from the mean", avg, now)
@@ -117,7 +117,7 @@ func SanityCheckPeers() error {
 func getPeers() (map[int][]*Peer, error) {
 	if _, err := zkConn.Create(MyConf.Zookeeper.ZKPath, []byte(""), 0, zk.WorldACL(zk.PermAll)); err != nil {
 		if err == zk.ErrNodeExists {
-			log.WithField("path", MyConf.Zookeeper.ZKPath).Warn("zk node exists")
+			log.WithField("path", MyConf.Zookeeper.ZKPath).Warn("zk节点已经存在")
 		} else {
 			log.WithFields(log.Fields{
 				"path":  MyConf.Zookeeper.ZKPath,

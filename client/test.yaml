@@ -2,6 +2,6 @@ base:
   rpc-addr: ""
   workerId: 0
 zookeeper:
-  addr: ["", "", ""]
-  path: ""
+  addr: ["192.168.0.200:2181", "192.168.0.200:2182", "192.168.0.200:2183"]
+  path: "/msnowflake-servers"
   timeout: 30s
