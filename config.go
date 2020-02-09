@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"gopkg.in/yaml.v2"
 	"io/ioutil"
 	"os"
@@ -41,6 +42,10 @@ type Zookeeper struct {
 	ZKAddr    []string      `yaml:"addr"`
 	ZKTimeout time.Duration `yaml:"timeout"`
 	ZKPath    string        `yaml:"path"`
+}
+
+func init() {
+	flag.StringVar(&confPath, "conf", "./msnowflake.yaml", "msnowflake的配置文件")
 }
 
 func InitConfig() (err error) {

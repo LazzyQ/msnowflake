@@ -2,8 +2,11 @@ package client
 
 import (
 	"encoding/json"
+	"errors"
+	myrpc "github.com/LazzyQ/msnowflake/rpc"
 	"github.com/samuel/go-zookeeper/zk"
 	log "github.com/sirupsen/logrus"
+	"math/rand"
 	"net/rpc"
 	"path"
 	"sort"
@@ -23,11 +26,12 @@ const (
 )
 
 var (
-	mutex sync.Mutex
-	zkPath    string
-	zkConn    *zk.Conn
-	zkServers []string
-	zkTimeout time.Duration
+	ErrNoRpcClient = errors.New("rpc: no rpc client service")
+	mutex          sync.Mutex
+	zkPath         string
+	zkConn         *zk.Conn
+	zkServers      []string
+	zkTimeout      time.Duration
 	// worker
 	workerIdMap = map[int64]*Client{}
 )
@@ -46,7 +50,7 @@ func Init(zServers []string, zPath string, zTimeout time.Duration) (err error) {
 		log.WithFields(log.Fields{
 			"zkServers": zkServers,
 			"zkTimeout": zkTimeout,
-			"error": err,
+			"error":     err,
 		}).Error("连接zk失败")
 	}
 	zkConn = conn
@@ -62,9 +66,9 @@ func Init(zServers []string, zPath string, zTimeout time.Duration) (err error) {
 // msnowflake的客户端
 type Client struct {
 	workerId int64
-	clients []*rpc.Client
-	stop chan bool
-	leader string
+	clients  []*rpc.Client
+	stop     chan bool
+	leader   string
 }
 
 // Peer store data in zookeeper.
@@ -73,8 +77,7 @@ type Peer struct {
 	Thrift []string `json:"thrift"`
 }
 
-
-func NewClient(workerId int64) (c *Client)  {
+func NewClient(workerId int64) (c *Client) {
 	var ok bool
 	mutex.Lock()
 	defer mutex.Unlock()
@@ -83,14 +86,39 @@ func NewClient(workerId int64) (c *Client)  {
 	}
 	c = &Client{
 		workerId: workerId,
-		clients: nil,
-		leader: "",
+		clients:  nil,
+		leader:   "",
 	}
 	go c.watchWorkerId(workerId, strconv.FormatInt(workerId, 10))
 	workerIdMap[workerId] = c
 	return
 }
 
+func (c *Client) Id() (id int64, err error) {
+	client, err := c.client()
+	if err != nil {
+		return
+	}
+	if err = client.Call(RPCNextId, c.workerId, &id); err != nil {
+		log.WithFields(log.Fields{
+			"call":     RPCNextId,
+			"workerId": c.workerId,
+			"error":    err,
+		}).Error("rpc.Call 调用失败")
+	}
+	return
+}
+
+func (c *Client) Ids(num int) (ids []int64, err error) {
+	client, err := c.client()
+	if err != nil {
+		return
+	}
+	if err = client.Call(RPCNextIds, &myrpc.NextIdsArgs{WorkerId: c.workerId, Num: num}, &ids); err != nil {
+		log.Error("rpc.Call(\"%s\", %d, &id) error(%v)", RPCNextId, c.workerId, err)
+	}
+	return
+}
 
 func (c *Client) watchWorkerId(workerId int64, workerIdStr string) {
 	workerIdPath := path.Join(zkPath, workerIdStr)
@@ -110,14 +138,14 @@ func (c *Client) watchWorkerId(workerId int64, workerIdStr string) {
 		sort.Strings(rpcs)
 		newLeader := rpcs[0]
 		if c.leader == newLeader {
-			log.Info("workerId: %s add a new standby msnowflake node", workerIdStr)
+			log.WithField("workerId", workerIdStr).Info("workerId添加了一个备用节点", workerIdStr)
 		} else {
 			log.Info("workerId: %s oldLeader: \"%s\", newLeader: \"%s\" not equals, continue leader selection", workerIdStr, c.leader, newLeader)
 			// get new leader info
 			workerNodePath := path.Join(zkPath, workerIdStr, newLeader)
 			bs, _, err := zkConn.Get(workerNodePath)
 			if err != nil {
-				log.Error("zkConn.Get(%s) error(%v)", workerNodePath, err)
+				log.Errorf("zkConn.Get(%s) error(%v)", workerNodePath, err)
 				time.Sleep(zkNodeDelaySleep)
 				continue
 			}
@@ -165,8 +193,8 @@ func (c *Client) pingAndRetry(stop <-chan bool, client *rpc.Client, addr string)
 	var (
 		failed bool
 		status int
-		err error
-		tmp *rpc.Client
+		err    error
+		tmp    *rpc.Client
 	)
 
 	for {
@@ -210,5 +238,23 @@ func closeRpc(clients []*rpc.Client, stop chan bool) {
 
 	if stop != nil {
 		close(stop)
+	}
+}
+
+func (c *Client) Close() {
+	closeRpc(c.clients, c.stop)
+	mutex.Lock()
+	defer mutex.Unlock()
+	delete(workerIdMap, c.workerId)
+}
+
+func (c *Client) client() (*rpc.Client, error) {
+	clientNum := len(c.clients)
+	if clientNum == 0 {
+		return nil, ErrNoRpcClient
+	} else if clientNum == 1 {
+		return c.clients[0], nil
+	} else {
+		return c.clients[rand.Intn(clientNum)], nil
 	}
 }

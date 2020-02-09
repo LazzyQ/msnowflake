@@ -8,7 +8,6 @@ import (
 
 func main() {
 
-	log.WithField("maxWorkerId", maxWorkerId).Info("======")
 	flag.Parse()
 	if err := InitConfig(); err != nil {
 		panic(err)

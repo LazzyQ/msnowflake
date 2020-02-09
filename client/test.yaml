@@ -1,0 +1,7 @@
+base:
+  rpc-addr: ""
+  workerId: 0
+zookeeper:
+  addr: ["", "", ""]
+  path: ""
+  timeout: 30s

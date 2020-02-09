@@ -17,7 +17,7 @@ func InitRPC(workers Workers) error {
 	s := &SnowflakeRPC{workers: workers}
 	rpc.Register(s)
 	for _, bind := range MyConf.Base.RPCBind {
-		log.Info("start listen rpc addr: \"%s\"", bind)
+		log.WithField("addr", bind).Info("开始启动rpc监听")
 		go rpcListen(bind)
 	}
 	return nil
