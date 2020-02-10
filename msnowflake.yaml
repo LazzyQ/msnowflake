@@ -1,11 +1,12 @@
 base:
   pid: /tmp/snmowflake.pid
+  rpc-bind: localhost:8080
   dir: ./
 zookeeper:
-  addr: ["192.168.0.200:2181", "192.168.0.200:2182", "192.168.0.200:2183"]
+  addr: ["localhost:2181"]
   timeout: 30s
   path: "/msnowflake-servers"
 snowflake:
   datacenter: 0
   worker: [0,1,2]
-  start: 2010-11-04 09:42:54
+  start: 2020-02-02 13:14:52

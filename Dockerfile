@@ -5,7 +5,11 @@ MAINTAINER zengqiang96 "zengqiang96@gmail.com"
 ENV CGO_ENABLED 0
 
 WORKDIR /src
-COPY . .
+
+RUN  \
+     apk add --no-cache git && \
+     git clone https://github.com/Lazzy/msnowflake && cd msnowflake && \
+     go install .
 
 RUN \
     GOPROXY="https://goproxy.io" \
