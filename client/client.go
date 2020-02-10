@@ -132,7 +132,7 @@ func (c *Client) watchWorkerId(workerIdStr string) {
 		if err != nil {
 			log.WithFields(log.Fields{
 				"workerIdPath": workerIdPath,
-				"error": err,
+				"error":        err,
 			}).Error("zkConn.ChildrenW失败")
 			time.Sleep(zkNodeDelaySleep)
 			continue
@@ -149,7 +149,7 @@ func (c *Client) watchWorkerId(workerIdStr string) {
 		} else {
 
 			log.WithFields(log.Fields{
-				"workerId": workerIdStr,
+				"workerId":  workerIdStr,
 				"oldLeader": c.leader,
 				"newLeader": newLeader,
 			}).Info("leader发生变化，重新选举")
@@ -159,7 +159,7 @@ func (c *Client) watchWorkerId(workerIdStr string) {
 			if err != nil {
 				log.WithFields(log.Fields{
 					"workerNodePath": workerNodePath,
-					"error": err,
+					"error":          err,
 				}).Error("zk Get失败", workerNodePath, err)
 				time.Sleep(zkNodeDelaySleep)
 				continue
@@ -168,7 +168,7 @@ func (c *Client) watchWorkerId(workerIdStr string) {
 			if err = json.Unmarshal(bs, peer); err != nil {
 				log.WithFields(log.Fields{
 					"bytes内容": string(bs),
-					"error": err,
+					"error":   err,
 				}).Error("json反序列失败")
 				time.Sleep(zkNodeDelaySleep)
 				continue
@@ -180,7 +180,7 @@ func (c *Client) watchWorkerId(workerIdStr string) {
 				clt, err := rpc.Dial("tcp", addr)
 				if err != nil {
 					log.WithFields(log.Fields{
-						"addr": addr,
+						"addr":  addr,
 						"error": err,
 					}).Error("rpc.Dial失败", addr, err)
 					continue
@@ -202,7 +202,7 @@ func (c *Client) watchWorkerId(workerIdStr string) {
 		event := <-watch
 		log.WithFields(log.Fields{
 			"workerIdPath": workerIdPath,
-			"event": event.Type.String(),
+			"event":        event.Type.String(),
 		}).Error("zk node发生改变")
 	}
 }
@@ -231,7 +231,7 @@ func (c *Client) pingAndRetry(stop <-chan bool, client *rpc.Client, addr string)
 		if !failed {
 			if err = client.Call(RPCPing, 0, &status); err != nil {
 				log.WithFields(log.Fields{
-					"rpc": RPCPing,
+					"rpc":   RPCPing,
 					"error": err,
 				}).Error("client.Call失败")
 				failed = true
@@ -245,7 +245,7 @@ func (c *Client) pingAndRetry(stop <-chan bool, client *rpc.Client, addr string)
 
 		if tmp, err = rpc.Dial("tcp", addr); err != nil {
 			log.WithFields(log.Fields{
-				"addr": addr,
+				"addr":  addr,
 				"error": err,
 			}).Error("rpc.Dial失败")
 			time.Sleep(rpcClientRetrySleep)
