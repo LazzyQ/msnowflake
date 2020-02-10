@@ -7,17 +7,14 @@ ENV CGO_ENABLED 0
 WORKDIR /src
 
 RUN  \
+     GOPROXY="https://goproxy.io" && \
      apk add --no-cache git && \
      git clone https://github.com/Lazzy/msnowflake && cd msnowflake && \
-     go install .
-
-RUN \
-    GOPROXY="https://goproxy.io" \
-    go build .
+     go build .
 
 FROM alpine:latest
 
-COPY --from=builder /src/msnowflake /usr/bin/msnowflake
+COPY --from=builder /src/msnowflake/msnowflake /usr/bin/msnowflake
 
 VOLUME ["/var/msnowflake"]
 
