@@ -1,6 +1,6 @@
 base:
   pid: /tmp/snmowflake.pid
-  rpc-bind: 192.168.0.200:8080
+  rpc-bind: ["192.168.0.200:8080"]
   dir: ./
 zookeeper:
   addr: ["localhost:2181"]
