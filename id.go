@@ -70,8 +70,11 @@ func (id *IdWorker) NextId() (int64, error) {
 	defer id.mutex.Unlock()
 	timestamp := timeGen()
 	if timestamp < id.lastTimestamp {
-		log.Error("clock is moving backwards.  Rejecting requests until %d.", id.lastTimestamp)
-		return 0, errors.New(fmt.Sprintf("Clock moved backwards.  Refusing to generate id for %d milliseconds", id.lastTimestamp-timestamp))
+		log.WithFields(log.Fields{
+			"timestamp":     timestamp,
+			"lastTimestamp": id.lastTimestamp,
+		}).Error("时钟回调，请求拒绝")
+		return 0, errors.New(fmt.Sprintf("时钟回调. 请求拒绝%dms", id.lastTimestamp-timestamp))
 	}
 	if id.lastTimestamp == timestamp {
 		id.sequence = (id.sequence + 1) & sequenceMask
@@ -94,11 +97,16 @@ func (id *IdWorker) NextIds(num int) ([]int64, error) {
 		return nil, errors.New(fmt.Sprintf("NextIds数量参数不对: %d", num))
 	}
 	ids := make([]int64, num)
+	id.mutex.Lock()
+	defer id.mutex.Unlock()
 	for i := 0; i < num; i++ {
 		timestamp := timeGen()
 		if timestamp < id.lastTimestamp {
-			log.Error("clock is moving backwards.  Rejecting requests until %d.", id.lastTimestamp)
-			return nil, errors.New(fmt.Sprintf("Clock moved backwards.  Refusing to generate id for %d milliseconds", id.lastTimestamp-timestamp))
+			log.WithFields(log.Fields{
+				"timestamp":     timestamp,
+				"lastTimestamp": id.lastTimestamp,
+			}).Error("时钟回调，请求拒绝")
+			return nil, errors.New(fmt.Sprintf("时钟回调. 请求拒绝%dms", id.lastTimestamp-timestamp))
 		}
 		if id.lastTimestamp == timestamp {
 			id.sequence = (id.sequence + 1) & sequenceMask
