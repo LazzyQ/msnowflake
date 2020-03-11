@@ -85,7 +85,7 @@ func (id *IdWorker) NextId() (int64, error) {
 		id.sequence = 0
 	}
 	id.lastTimestamp = timestamp
-	return ((timestamp - id.twepoch) << timestampLeftShift) | (id.dataCenterId << dataCenterIdBits) | (id.workerId << workerIdShift) | id.sequence, nil
+	return ((timestamp - id.twepoch) << timestampLeftShift) | (id.dataCenterId << dataCenterIdShift) | (id.workerId << workerIdShift) | id.sequence, nil
 }
 
 func (id *IdWorker) NextIds(num int) ([]int64, error) {
