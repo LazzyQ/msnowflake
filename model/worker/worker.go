@@ -48,7 +48,7 @@ func newIdWorker() *IdWorker {
 	idWorker.dataCenterId = dataCenterId
 	idWorker.lastTimestamp = -1
 	idWorker.sequence = 0
-	idWorker.twepoch = twepoch.UnixNano() / int64(time.Microsecond)
+	idWorker.twepoch = twepoch.UnixNano() / int64(time.Millisecond)
 	idWorker.mutex = sync.Mutex{}
 	log.Debugf("worker启动, timestamp左移:%v, dataCenterId位数:%v,workerId位数:%v, sequence位数:%v, workerId:%v",
 		timestampLeftShift, dataCenterIdBits, workerIdBits, sequenceBits, workerId)

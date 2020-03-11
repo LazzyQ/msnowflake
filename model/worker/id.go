@@ -9,7 +9,6 @@ import (
 
 // id = [timestamp][dataCenterId:5][workerId:5][sequence:12]
 const (
-	twepoch            = int64(1288834974657)
 	workerIdBits       = uint(5)
 	dataCenterIdBits   = uint(5)
 	maxWorkerId        = -1 ^ (-1 << workerIdBits)
@@ -73,7 +72,7 @@ func (id *IdWorker) NextIds(num uint32) ([]int64, error) {
 
 // 返回的是当前时间戳，但是是ms
 func timeGen() int64 {
-	return time.Now().UnixNano() / int64(time.Microsecond)
+	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
 func tilNextMillis(lastTimestamp int64) int64 {
