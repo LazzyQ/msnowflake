@@ -3,7 +3,19 @@ syntax = "proto3";
 package msnowflake;
 
 service MSnowflake {
-    rpc GetId() returns (Ids) {}
+    rpc NextId (IdRequest) returns (IdResponse) {
+    }
+    rpc NextIds (IdRequest) returns (IdResponse) {
+    }
 }
 
-mess
+message IdResponse {
+    int32 code = 1;
+    string message = 2;
+    int64 id = 3;
+    repeated int64 ids = 4;
+}
+
+message IdRequest {
+    uint32 num = 1;
+}

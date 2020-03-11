@@ -66,6 +66,10 @@ func Init() {
 	config.Get(defaultRootPath, "snowflake").Scan(&snowflakeConfig)
 	config.Get(defaultRootPath, "zookeeper").Scan(&zookeeperConfig)
 
+	log.Infof("etcd配置:%v", etcdConfig)
+	log.Infof("snowflake配置:%v", snowflakeConfig)
+	log.Infof("zookeeper配置:%v", zookeeperConfig)
+
 	// 标记已经初始化
 	inited = true
 }

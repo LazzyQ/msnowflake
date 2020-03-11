@@ -1,3 +1,5 @@
 app:
   zookeeper:
-    addr: ["localhist:2181"]
+    addr: ["localhost:2181"]
+    timeout: 5000000000
+    path: "/msnowflake-server"

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	log "github.com/micro/go-micro/v2/logger"
-	"sync"
 	"time"
 )
 
@@ -23,18 +22,12 @@ const (
 	maxNextIdsNum      = 100
 )
 
-
-
-
 func (id *IdWorker) NextId() (int64, error) {
 	id.mutex.Lock()
 	defer id.mutex.Unlock()
 	timestamp := timeGen()
 	if timestamp < id.lastTimestamp {
-		log.WithFields(log.Fields{
-			"timestamp":     timestamp,
-			"lastTimestamp": id.lastTimestamp,
-		}).Error("时钟回调，请求拒绝")
+		log.Errorf("时钟回调. 请求拒绝%dms, timestamp:%v,lastTimestamp:%v", id.lastTimestamp-timestamp, timestamp, id.lastTimestamp)
 		return 0, errors.New(fmt.Sprintf("时钟回调. 请求拒绝%dms", id.lastTimestamp-timestamp))
 	}
 	if id.lastTimestamp == timestamp {
@@ -49,24 +42,19 @@ func (id *IdWorker) NextId() (int64, error) {
 	return ((timestamp - id.twepoch) << timestampLeftShift) | (id.dataCenterId << dataCenterIdBits) | (id.workerId << workerIdShift) | id.sequence, nil
 }
 
-func (id *IdWorker) NextIds(num int) ([]int64, error) {
+func (id *IdWorker) NextIds(num uint32) ([]int64, error) {
 	if num > maxNextIdsNum || num < 0 {
-		log.WithFields(log.Fields{
-			"maxIdNum":     maxNextIdsNum,
-			"currentIdNum": num,
-		}).Error("获取id超过NextIds限制的数量或小于0")
+		log.Errorf("取id超过NextIds限制的数量或小于0, maxIdNum:%v, currentIdNum:%v", maxNextIdsNum, num)
 		return nil, errors.New(fmt.Sprintf("NextIds数量参数不对: %d", num))
 	}
 	ids := make([]int64, num)
 	id.mutex.Lock()
 	defer id.mutex.Unlock()
-	for i := 0; i < num; i++ {
+	var i uint32
+	for i = 0; i < num; i++ {
 		timestamp := timeGen()
 		if timestamp < id.lastTimestamp {
-			log.WithFields(log.Fields{
-				"timestamp":     timestamp,
-				"lastTimestamp": id.lastTimestamp,
-			}).Error("时钟回调，请求拒绝")
+			log.Errorf("时钟回调. 请求拒绝%dms, timestamp:%v,lastTimestamp:%v", id.lastTimestamp-timestamp, timestamp, id.lastTimestamp)
 			return nil, errors.New(fmt.Sprintf("时钟回调. 请求拒绝%dms", id.lastTimestamp-timestamp))
 		}
 		if id.lastTimestamp == timestamp {

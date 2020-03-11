@@ -6,11 +6,12 @@ import (
 	"github.com/LazzyQ/msnowflake/basic/config"
 	"github.com/LazzyQ/msnowflake/handler"
 	"github.com/LazzyQ/msnowflake/model"
+	"github.com/LazzyQ/msnowflake/proto"
 	"github.com/micro/cli/v2"
 	"github.com/micro/go-micro/v2"
+	log "github.com/micro/go-micro/v2/logger"
 	"github.com/micro/go-micro/v2/registry"
 	"github.com/micro/go-micro/v2/registry/etcd"
-	"log"
 )
 
 func main() {
@@ -31,8 +32,11 @@ func main() {
 		}),
 	)
 
+	_ = msnowflake.RegisterMSnowflakeHandler(srv.Server(), new(handler.MSnowflake))
+
 	if err := srv.Run(); err != nil {
-		log.Fatal("msnowflake服务启动失败")
+		log.Error("msnowflake服务启动失败")
+		panic(err)
 	}
 }
 
