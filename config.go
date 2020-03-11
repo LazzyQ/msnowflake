@@ -87,7 +87,7 @@ func InitConfig() (err error) {
 		if twepoch, err = time.Parse("2006-01-02 15:04:05", MyConf.Snowflake.Start); err != nil {
 			return
 		} else {
-			MyConf.Twepoch = twepoch.UnixNano() / int64(time.Microsecond)
+			MyConf.Twepoch = twepoch.UnixNano() / int64(time.Millisecond)
 		}
 	}
 	return

@@ -124,7 +124,7 @@ func (id *IdWorker) NextIds(num int) ([]int64, error) {
 
 // 返回的是当前时间戳，但是是ms
 func timeGen() int64 {
-	return time.Now().UnixNano() / int64(time.Microsecond)
+	return time.Now().UnixNano() / int64(time.Millisecond)
 }
 
 func tilNextMillis(lastTimestamp int64) int64 {
