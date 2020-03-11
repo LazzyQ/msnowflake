@@ -1,0 +1,3 @@
+app:
+  zookeeper:
+    addr: ["localhist:2181"]

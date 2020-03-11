@@ -1,0 +1,9 @@
+syntax = "proto3";
+
+package msnowflake;
+
+service MSnowflake {
+    rpc GetId() returns (Ids) {}
+}
+
+mess

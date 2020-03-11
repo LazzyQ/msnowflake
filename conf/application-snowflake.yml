@@ -1,0 +1,7 @@
+app:
+  snowflake:
+    worker-id: 0
+    datacenter: 0
+    twepoch: ""
+  zk:
+    addr: ["localhist:2181"]
