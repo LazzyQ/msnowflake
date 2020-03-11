@@ -1,8 +1,0 @@
-base:
-  pid: /tmp/snmowflake.pid
-  port: ["localhost:8080"]
-  dir: ./
-snowflake:
-  datacenter: 0
-  worker: [0,1,2]
-  start: 2020-02-02 13:14:52 # 时间纪元
