@@ -1,7 +1,0 @@
-base:
-  rpc-addr: ""
-  workerId: 0
-zookeeper:
-  addr: ["localhost:2181", "localhost:2182", "localhost:2183"]
-  path: "/msnowflake-servers"
-  timeout: 30s

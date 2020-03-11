@@ -1,0 +1,6 @@
+app:
+  snowflake:
+    port: 6060
+    workerId: 1
+    dataCenter: 1
+    twepoch: "2020-02-02 13:14:52"
