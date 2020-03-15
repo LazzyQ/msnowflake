@@ -34,7 +34,10 @@ func newIdWorker() (*IdWorker, error) {
 	snowflakeConfig := config.GetSnowflakeConfig()
 	dataCenterId := snowflakeConfig.GetDataCenter()
 	workerId := snowflakeConfig.GetWorkerId()
-	twepoch := snowflakeConfig.GetTwepoch()
+	twepoch, err := snowflakeConfig.GetTwepoch()
+	if err != nil {
+		return nil, err
+	}
 
 	idWorker := &IdWorker{}
 	if workerId > maxWorkerId || workerId < 0 {
