@@ -11,5 +11,7 @@ zookeeper:
   timeout: 5s
   path: "/msnowflake-server"
 log:
-  path: "/var/wemeng/msnowflake"
-  filename: "msnowflake.log"
+  filename: "/var/wemeng/msnowflake/msnowflake.log"
+  logSuffix: ".%Y%m%d%H"
+  level: "info"
+  maxRemainCount: 7
