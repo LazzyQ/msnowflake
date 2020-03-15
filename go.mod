@@ -8,5 +8,6 @@ require (
 	github.com/micro/go-micro/v2 v2.2.0
 	github.com/samuel/go-zookeeper v0.0.0-20190923202752-2cc03de413da
 	github.com/sirupsen/logrus v1.4.2
+	github.com/spf13/viper v1.6.2
 	gopkg.in/yaml.v2 v2.2.8 // indirect
 )

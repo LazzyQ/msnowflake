@@ -37,7 +37,8 @@ func (m MSnowflake) NextIds(ctx context.Context, req *msnowflake.IdRequest, res 
 	return nil
 }
 
-func Init()  {
-	idWorder = worker.GetIdWorker()
+func Init() (err error)  {
+	idWorder, err = worker.GetIdWorker()
+	return err
 }
 

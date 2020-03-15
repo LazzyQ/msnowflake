@@ -5,7 +5,13 @@ import (
 	"github.com/LazzyQ/msnowflake/model/zk"
 )
 
-func Init()  {
-	zk.Init()
-	worker.Init()
+func Init() (err error) {
+	if err = zk.Init(); err != nil {
+		return err
+	}
+
+	if err = worker.Init(); err != nil {
+		return err
+	}
+	return nil
 }

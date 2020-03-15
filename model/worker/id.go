@@ -3,7 +3,7 @@ package worker
 import (
 	"errors"
 	"fmt"
-	log "github.com/micro/go-micro/v2/logger"
+	log "github.com/sirupsen/logrus"
 	"time"
 )
 

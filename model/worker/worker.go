@@ -4,7 +4,7 @@ import (
 	"errors"
 	"github.com/LazzyQ/msnowflake/basic/config"
 	"github.com/LazzyQ/msnowflake/model/zk"
-	log "github.com/micro/go-micro/v2/logger"
+	log "github.com/sirupsen/logrus"
 	"sync"
 	"time"
 )
@@ -13,8 +13,12 @@ var (
 	worker *IdWorker
 )
 
-func Init()  {
-	worker = newIdWorker()
+func Init() (err error) {
+	worker, err = newIdWorker()
+	if err != nil {
+		return
+	}
+	return nil
 }
 
 type IdWorker struct {
@@ -26,7 +30,7 @@ type IdWorker struct {
 	mutex         sync.Mutex
 }
 
-func newIdWorker() *IdWorker {
+func newIdWorker() (*IdWorker, error) {
 	snowflakeConfig := config.GetSnowflakeConfig()
 	dataCenterId := snowflakeConfig.GetDataCenter()
 	workerId := snowflakeConfig.GetWorkerId()
@@ -34,12 +38,18 @@ func newIdWorker() *IdWorker {
 
 	idWorker := &IdWorker{}
 	if workerId > maxWorkerId || workerId < 0 {
-		log.Errorf("workerId必须在区间内, upper:%d, lower:%d", maxWorkerId, 0)
-		panic(errors.New("workerId超过限制"))
+		log.WithFields(log.Fields{
+			"upper": maxWorkerId,
+			"lower": 0,
+		}).Error("workerId必须在区间内")
+		return nil, errors.New("workerId超过限制")
 	}
 	if dataCenterId > maxDataCenterId || dataCenterId < 0 {
-		log.Errorf("dataCenterId必须在区间内upper:%d, lower:%d", maxDataCenterId, 0)
-		panic(errors.New("dataCenterId超过限制"))
+		log.WithFields(log.Fields{
+			"upper": maxDataCenterId,
+			"lower": 0,
+		}).Error("dataCenterId必须在区间内")
+		return nil, errors.New("dataCenterId超过限制")
 	}
 
 	zk.CreateSnowflakeWorkerNode(workerId)
@@ -50,11 +60,19 @@ func newIdWorker() *IdWorker {
 	idWorker.sequence = 0
 	idWorker.twepoch = twepoch.UnixNano() / int64(time.Millisecond)
 	idWorker.mutex = sync.Mutex{}
-	log.Debugf("worker启动, timestamp左移:%v, dataCenterId位数:%v,workerId位数:%v, sequence位数:%v, workerId:%v",
-		timestampLeftShift, dataCenterIdBits, workerIdBits, sequenceBits, workerId)
-	return idWorker
+	log.WithFields(log.Fields{
+		"timestamp左移":    timestampLeftShift,
+		"dataCenterId位数": dataCenterIdBits,
+		"workerId位数":     workerIdBits,
+		"sequence位数":     sequenceBits,
+		"workerId":       workerId,
+	}).Debug("worker启动完成...")
+	return idWorker, nil
 }
 
-func GetIdWorker() *IdWorker{
-	return worker
+func GetIdWorker() (*IdWorker, error) {
+	if worker == nil {
+		return nil, errors.New("worker未完成初始化")
+	}
+	return worker, nil
 }

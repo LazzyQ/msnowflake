@@ -2,27 +2,21 @@ package config
 
 import "time"
 
-type ZookeeperConfig interface {
-	GetAddr() []string
-	GetTimeout() time.Duration
-	GetPath() string
+type ZookeeperConfig struct {
+	Addr    []string
+	Timeout time.Duration
+	Path    string
 }
 
-type defaultZookeeperConfig struct {
-	Addr    []string      `json:"addr"`
-	Timeout time.Duration `json:"timeout"`
-	Path    string        `json:"path"`
-}
-
-func (p defaultZookeeperConfig) GetAddr() []string {
+func (p ZookeeperConfig) GetAddr() []string {
 	return p.Addr
 }
 
-func (p defaultZookeeperConfig) GetTimeout() time.Duration {
+func (p ZookeeperConfig) GetTimeout() time.Duration {
 	return p.Timeout
 }
 
 
-func (p defaultZookeeperConfig) GetPath() string {
+func (p ZookeeperConfig) GetPath() string {
 	return p.Path
 }

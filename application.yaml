@@ -1,0 +1,15 @@
+etcd:
+  host: 127.0.0.1
+  port: 2379
+snowflake:
+  port: 6060
+  workerId: 1
+  dataCenter: 1
+  twepoch: "2020-02-02 13:14:52"
+zookeeper:
+  addr: ["localhost:2181"]
+  timeout: 5s
+  path: "/msnowflake-server"
+log:
+  path: "/var/wemeng/msnowflake"
+  filename: "msnowflake.log"

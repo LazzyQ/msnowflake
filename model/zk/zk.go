@@ -2,8 +2,8 @@ package zk
 
 import (
 	"github.com/LazzyQ/msnowflake/basic/config"
-	log "github.com/micro/go-micro/v2/logger"
 	myzk "github.com/samuel/go-zookeeper/zk"
+	log "github.com/sirupsen/logrus"
 	"strconv"
 	"strings"
 )
@@ -13,14 +13,18 @@ var (
 	snowflakeRootPath string
 )
 
-func Init() {
+func Init() error {
 	zkConfig := config.GetZookeeperConfig()
 	snowflakeRootPath = zkConfig.GetPath()
 	conn, session, err := myzk.Connect(zkConfig.GetAddr(), zkConfig.GetTimeout())
 
 	if err != nil {
-		log.Errorf("连接zk失败, addr:%v, timeout:%v, err:%v", zkConfig.GetAddr(), zkConfig.GetTimeout(), err)
-		panic(err)
+		log.WithFields(log.Fields{
+			"addr": zkConfig.GetAddr(),
+			"timeout": zkConfig.GetTimeout(),
+			"err": err,
+		}).Error("连接zk失败" )
+		return err
 	}
 
 	zkConn = conn
@@ -28,25 +32,32 @@ func Init() {
 	go func() {
 		for {
 			event := <-session
-			log.Infof("收到zk事件:%v", event.State.String())
+			log.WithField("事件", event.State.String()).Info("收到zk事件")
 		}
 	}()
 
-
 	if _, err := zkConn.Create(snowflakeRootPath, []byte(""), 0, myzk.WorldACL(myzk.PermAll)); err != nil {
 		if err != myzk.ErrNodeExists {
-			log.Errorf("zk创建snowflake根节点失败, path:%v, err:%v", snowflakeRootPath, err)
-			panic(err)
+			log.WithFields(log.Fields{
+				"根路径": snowflakeRootPath,
+				"err": err,
+			}).Error("zk创建snowflake根节点失败")
+			return err
 		}
 	}
+	return nil
 }
 
-func CreateSnowflakeWorkerNode(workerId int64) {
+func CreateSnowflakeWorkerNode(workerId int64) error {
 	path := strings.Join([]string{snowflakeRootPath, strconv.FormatInt(workerId, 10)}, "/")
 	if _, err := zkConn.Create(path, []byte(""), myzk.FlagEphemeral, myzk.WorldACL(myzk.PermAll)); err != nil {
-		log.Errorf("zk创建snowflake节点失败 path:%v, err:%v", path, err)
-		panic(err)
+		log.WithFields(log.Fields{
+			"路径": path,
+			"err": err,
+		}).Errorf("zk创建snowflake节点失败")
+		return err
 	}
+	return nil
 }
 
 func CloseZK() {
