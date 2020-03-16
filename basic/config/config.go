@@ -19,6 +19,7 @@ type Config struct {
 func Init() error {
 	viper.SetConfigFile("application.yaml")
 	viper.AddConfigPath(".")
+	viper.AddConfigPath("/app/conf")
 	if err := viper.ReadInConfig(); err != nil {
 		return err
 	}

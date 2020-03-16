@@ -1,22 +1,27 @@
-FROM golang:latest AS builder
-MAINTAINER zengqiang96 "zengqiang96@gmail.com"
+FROM golang:alpine as builder
 
-# 参考 https://yryz.net/post/golang-docker-alpine-start-panic.html
-ENV CGO_ENABLED 0
+RUN mkdir /app
+WORKDIR /app
 
-WORKDIR /src
+ENV GO111MODULE=on
+ENV GOPROXY="https://goproxy.io"
+
 COPY . .
 
-RUN \
-    GOPROXY="https://goproxy.io" \
-    go build .
+RUN go mod download
+RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o msnowflake
 
+# Run container
 FROM alpine:latest
 
-COPY --from=builder /src/msnowflake /usr/bin/msnowflake
+RUN apk --no-cache add ca-certificates
 
-VOLUME ["/var/msnowflake"]
+RUN mkdir /app
+WORKDIR /app
 
-CMD ["-conf=/var/msnowflake/msnowflake.yaml"]
-ENTRYPOINT ["/usr/bin/msnowflake"]
+COPY --from=builder /app/msnowflake .
+
+VOLUME ["/app/conf"]
+
+ENTRYPOINT ["/app/msnowflake"]
 
