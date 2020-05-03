@@ -1,7 +1,7 @@
-package config
+package basic
 
 import (
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -23,10 +23,9 @@ func (p SnowflakeConfig) GetDataCenter() int64 {
 func (p SnowflakeConfig) GetTwepoch() (time.Time, error) {
 	twepoch, err := time.Parse("2006-01-02 15:04:05", p.Twepoch)
 	if err != nil {
-		log.WithFields(log.Fields{
-			"twepoch": p.Twepoch,
-			"err": err,
-		}).Error("Snowflake的Twepoch配置不正确")
+		zap.S().Errorw("Snowflake的Twepoch配置不正确",
+			"twepoch", p.Twepoch,
+			"err", err)
 		return twepoch, err
 	}
 	return twepoch, nil

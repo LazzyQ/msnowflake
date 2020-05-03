@@ -1,9 +1,9 @@
-package worker
+package model
 
 import (
 	"errors"
 	"fmt"
-	log "github.com/sirupsen/logrus"
+	"go.uber.org/zap"
 	"time"
 )
 
@@ -26,7 +26,7 @@ func (id *IdWorker) NextId() (int64, error) {
 	defer id.mutex.Unlock()
 	timestamp := timeGen()
 	if timestamp < id.lastTimestamp {
-		log.Errorf("时钟回调. 请求拒绝%dms, timestamp:%v,lastTimestamp:%v", id.lastTimestamp-timestamp, timestamp, id.lastTimestamp)
+		zap.S().Errorf("时钟回调. 请求拒绝%dms, timestamp:%v,lastTimestamp:%v", id.lastTimestamp-timestamp, timestamp, id.lastTimestamp)
 		return 0, errors.New(fmt.Sprintf("时钟回调. 请求拒绝%dms", id.lastTimestamp-timestamp))
 	}
 	if id.lastTimestamp == timestamp {
@@ -43,7 +43,7 @@ func (id *IdWorker) NextId() (int64, error) {
 
 func (id *IdWorker) NextIds(num uint32) ([]int64, error) {
 	if num > maxNextIdsNum || num < 0 {
-		log.Errorf("取id超过NextIds限制的数量或小于0, maxIdNum:%v, currentIdNum:%v", maxNextIdsNum, num)
+		zap.S().Errorf("取id超过NextIds限制的数量或小于0, maxIdNum:%v, currentIdNum:%v", maxNextIdsNum, num)
 		return nil, errors.New(fmt.Sprintf("NextIds数量参数不对: %d", num))
 	}
 	ids := make([]int64, num)
@@ -53,7 +53,7 @@ func (id *IdWorker) NextIds(num uint32) ([]int64, error) {
 	for i = 0; i < num; i++ {
 		timestamp := timeGen()
 		if timestamp < id.lastTimestamp {
-			log.Errorf("时钟回调. 请求拒绝%dms, timestamp:%v,lastTimestamp:%v", id.lastTimestamp-timestamp, timestamp, id.lastTimestamp)
+			zap.S().Errorf("时钟回调. 请求拒绝%dms, timestamp:%v,lastTimestamp:%v", id.lastTimestamp-timestamp, timestamp, id.lastTimestamp)
 			return nil, errors.New(fmt.Sprintf("时钟回调. 请求拒绝%dms", id.lastTimestamp-timestamp))
 		}
 		if id.lastTimestamp == timestamp {

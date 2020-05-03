@@ -2,17 +2,15 @@ package handler
 
 import (
 	"context"
-	"github.com/LazzyQ/msnowflake/model/worker"
+	"github.com/LazzyQ/msnowflake/model"
 	msnowflake "github.com/LazzyQ/msnowflake/proto"
 )
 
-
 var (
-	idWorder *worker.IdWorker
+	idWorder *model.IdWorker
 )
 
 type MSnowflake struct {
-	
 }
 
 func (m MSnowflake) NextId(ctx context.Context, req *msnowflake.IdRequest, res *msnowflake.IdResponse) error {
@@ -20,7 +18,7 @@ func (m MSnowflake) NextId(ctx context.Context, req *msnowflake.IdRequest, res *
 	if err != nil {
 		return err
 	}
-	res.Code = 0;
+	res.Code = 0
 	res.Message = "success"
 	res.Id = id
 	return nil
@@ -31,14 +29,13 @@ func (m MSnowflake) NextIds(ctx context.Context, req *msnowflake.IdRequest, res 
 	if err != nil {
 		return err
 	}
-	res.Code = 0;
+	res.Code = 0
 	res.Message = "success"
 	res.Ids = ids
 	return nil
 }
 
-func Init() (err error)  {
-	idWorder, err = worker.GetIdWorker()
+func Init() (err error) {
+	idWorder, err = model.GetIdWorker()
 	return err
 }
-
